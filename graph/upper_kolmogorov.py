@@ -6,8 +6,8 @@ import csv
 
 def run_range_experiment():
     results = []
-    num_flips = 100            # Flips to perform per 'n'
-    num_random_controls = 100  # Controls to generate per 'n'
+    num_flips = 100
+    num_random_controls = 100
     results_file = "compression_results_range.csv"
     
     print("Running experiment for n = 32 to 64...")
