@@ -308,5 +308,5 @@ def create_all_turing_machines_n(n: int, folder_base_name: str = "halting_machin
     print(f"Saved {halting_count} halting machines across {current_file_idx} files.")
 
 if __name__ == "__main__":
-    for i in range(2, 6):
+    for i in range(2, 4):
         create_all_turing_machines_n(i)
