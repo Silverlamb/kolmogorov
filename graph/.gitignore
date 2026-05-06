@@ -44,3 +44,4 @@ Thumbs.db
 bb*_halting_machines/
 *.txt
 *.json
+bb_compressed_unique/
