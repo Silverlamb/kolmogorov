@@ -2,10 +2,11 @@ import os
 import zlib
 import random
 import matplotlib.pyplot as plt
-import numpy as np # Import numpy for regression
+import numpy as np
+from scipy.signal import savgol_filter
 
-def simple_scatter_plot_opaque_with_regression():
-    print("Generating raw data with regression line...")
+def simple_scatter_plot_smoothed_envelope():
+    print("Generating raw data with smoothed lower envelope...")
     
     init_x, init_y = [], []
     grad_x, grad_y = [], []
@@ -42,35 +43,54 @@ def simple_scatter_plot_opaque_with_regression():
 
     plt.figure(figsize=(12, 7))
     
-    # Plotting Data
+    # Plotting Raw Data
     plt.scatter(grad_x, grad_y, alpha=0.7, s=15, color='#2E86C1', label='Gradual Flips')
     plt.scatter(rand_x, rand_y, alpha=0.6, s=15, marker='x', color='#E74C3C', label='Pure Random Controls')
     plt.scatter(init_x, init_y, s=60, color='#F39C12', edgecolors='black', label='Starting Points (All 1s)', zorder=5)
     
-    # --- POLYNOMIAL REGRESSION ---
-    # Sort the x and y data so the line draws correctly from left to right
-    sorted_indices = np.argsort(grad_x)
-    x_sorted = np.array(grad_x)[sorted_indices]
-    y_sorted = np.array(grad_y)[sorted_indices]
+    # --- SPATIAL BINNING ---
+    all_x = np.array(init_x + grad_x + rand_x)
+    all_y = np.array(init_y + grad_y + rand_y)
     
-    # Fit a 3rd degree polynomial (you can change the degree)
-    # Using np.polyfit and poly1d
-    coefficients = np.polyfit(x_sorted, y_sorted, 3)
-    poly_equation = np.poly1d(coefficients)
+    num_bins = 150
+    bins = np.linspace(all_x.min(), all_x.max(), num_bins)
+    bin_indices = np.digitize(all_x, bins)
     
-    # Plot the regression line
-    plt.plot(x_sorted, poly_equation(x_sorted), color='green', linewidth=2, label='Polynomial Trend (Degree 3)')
-    # -----------------------------
+    binned_x = []
+    binned_y = []
+    
+    for b in range(1, len(bins)):
+        in_bin = (bin_indices == b)
+        if np.any(in_bin):
+            bin_center = (bins[b-1] + bins[b]) / 2
+            binned_x.append(bin_center)
+            binned_y.append(np.min(all_y[in_bin]))
+            
+    binned_x = np.array(binned_x)
+    binned_y = np.array(binned_y)
+    
+    # --- SAVITZKY-GOLAY SMOOTHING ---
+    # window_length must be odd and less than the number of bins
+    # polyorder is the degree of the polynomial fit
+    window_len = 15
+    if len(binned_y) < window_len:
+        window_len = len(binned_y) // 2 * 2 + 1 # Force nearest odd number
+        
+    smoothed_y = savgol_filter(binned_y, window_length=window_len, polyorder=3)
+    
+    # Plot the smoothed envelope line
+    plt.plot(binned_x, smoothed_y, color='lime', linewidth=3, label='Smoothed Lower Bound (Savitzky-Golay)', zorder=6)
+    # ----------------------------------------
 
-    plt.title('Raw Data: Bitstring Integer Value vs. Compressed Size with Regression')
+    plt.title('Bitstring Integer Value vs. Compressed Size with Smoothed Envelope')
     plt.xlabel('Integer Value (Base-10)')
     plt.ylabel('Compressed Size (Bytes)')
     plt.grid(True, linestyle='--', alpha=0.5)
     plt.legend(frameon=True, shadow=True)
     
     plt.tight_layout()
-    plt.savefig('compression_regression.png')
+    plt.savefig('compression_smoothed_envelope.png')
     plt.show()
 
 if __name__ == "__main__":
-    simple_scatter_plot_opaque_with_regression()
+    simple_scatter_plot_smoothed_envelope()

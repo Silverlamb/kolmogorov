@@ -53,9 +53,9 @@ def simple_scatter_plot_opaque_with_regression():
     x_sorted = np.array(grad_x)[sorted_indices]
     y_sorted = np.array(grad_y)[sorted_indices]
     
-    # Fit a 3rd degree polynomial (you can change the degree)
+    # Fit a 5th degree polynomial (you can change the degree)
     # Using np.polyfit and poly1d
-    coefficients = np.polyfit(x_sorted, y_sorted, 3)
+    coefficients = np.polyfit(x_sorted, y_sorted, 15)
     poly_equation = np.poly1d(coefficients)
     
     # Plot the regression line
