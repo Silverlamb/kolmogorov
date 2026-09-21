@@ -41,7 +41,8 @@ Thumbs.db
 
 # --- Project Specific Output Data ---
 # Ignore all dynamically generated Turing machine output folders and files
-bb*_halting_machines/
+graph/bb*_halting_machines/
 *.txt
 *.json
-bb_compressed_unique/
+graph/bb_compressed_unique/
+.obsidian
